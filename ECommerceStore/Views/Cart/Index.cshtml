@@ -1,0 +1,151 @@
+﻿@using ECommerceStore.DTOs
+@model List<CartItemViewModel>
+@{
+    ViewData["Title"] = "Моя корзина";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var totalAmount = Model.Sum(item => item.Price * item.Quantity);
+}
+
+<div class="container mt-4" style="max-width: 1200px;">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">🛒 Моя корзина</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Товар</th>
+                                <th>Изображение</th>
+                                <th>Цена</th>
+                                <th>Количество</th>
+                                <th>Сумма</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr id="cart-item-@item.CartItemId">
+                                    <td>
+                                        <strong>@item.ProductName</strong>
+                                        @if (!string.IsNullOrEmpty(item.ProductDescription) && item.ProductDescription.Length > 50)
+                                        {
+                                            <br />
+                                            <small class="text-muted">@item.ProductDescription.Substring(0, 50)...</small>
+                                        }
+                                    </td>  <!-- ✅ Закрыли первую ячейку -->
+                                    
+                                    <td style="width: 100px;">
+                                        @if (string.IsNullOrEmpty(item.ProductPhoto))
+                                        {
+                                            <img src="/images/NoImage.png" class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover;">
+                                        }
+                                        else
+                                        {
+                                            <img src="@item.ProductPhoto" class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover;">
+                                        }
+                                    </td>  <!-- ✅ Закрыли вторую ячейку -->
+                                    
+                                    <td class="text-nowrap">@item.Price.ToString("C")</td>  <!-- ✅ Цена -->
+                                    
+                                    <td style="min-width: 150px;">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <form asp-action="RemoveItem" method="post" style="display: inline;">
+                                                <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                                <button type="submit" class="btn btn-sm @(item.Quantity == 1 ? "btn-danger" : "btn-outline-danger")">
+                                                    @if (item.Quantity == 1)
+                                                    {
+                                                        <span>🗑️</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>-</span>
+                                                    }
+                                                </button>
+                                            </form>
+
+                                            <span class="fw-bold mx-2" style="min-width: 30px; text-align: center;">@item.Quantity</span>
+
+                                            @if (item.Quantity < item.Stock)
+                                            {
+                                                <form asp-action="AddToCart" method="post" style="display: inline;">
+                                                    <input type="hidden" name="productId" value="@item.ProductId" />
+                                                    <input type="hidden" name="quantity" value="1" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-success">+</button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-sm btn-outline-secondary" disabled title="Недостаточно на складе">+</button>
+                                            }
+                                        </div>
+                                        @if (item.Quantity >= item.Stock)
+                                        {
+                                            <small class="text-danger">Максимум @item.Stock шт.</small>
+                                        }
+                                    </td>  <!-- ✅ Закрыли четвёртую ячейку -->
+                                    
+                                    <td class="text-nowrap fw-bold">
+                                        @((item.Price * item.Quantity).ToString("C"))
+                                    </td>  <!-- ✅ Закрыли пятую ячейку -->
+                                    
+                                    <td>
+                                        <form asp-action="RemoveItemCompletely" method="post" onsubmit="return confirm('Вы уверены, что хотите полностью удалить этот товар?');">
+                                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                🗑️ Удалить всё
+                                            </button>
+                                        </form>
+                                    </td>  <!-- ✅ Закрыли шестую ячейку -->
+                                </tr>  <!-- ✅ Закрыли строку -->
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">Итого: </td>
+                                <td colspan="2" class="fw-bold fs-5 text-primary">
+                                    @totalAmount.ToString("C")
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="/Home/Index" class="btn btn-secondary">← Продолжить покупки</a>
+                    <a href="/Cart/Checkout" class="btn btn-success btn-lg">Оформить заказ →</a>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow">
+            <div class="card-body text-center py-5">
+                <h3 class="text-muted">🛒 Корзина пуста</h3>
+                <p class="mb-4">Добавьте товары в корзину, чтобы продолжить</p>
+                <a href="/Home/Index" class="btn btn-primary">Перейти к покупкам</a>
+            </div>
+        </div>
+    }
+</div>
