@@ -1,0 +1,60 @@
+﻿@model ECommerceStore.DTOs.CheckoutModel
+ 
+
+@{
+    ViewData["Title"] = "Оформление заказа";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4" style="max-width: 600px;">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">📝 Оформление заказа</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Checkout" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" placeholder="Введите ваше имя" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" placeholder="example@mail.com" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="MobileNumber" class="form-label"></label>
+                    <input asp-for="MobileNumber" class="form-control" placeholder="+7 (XXX) XXX-XX-XX" />
+                    <span asp-validation-for="MobileNumber" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Address" class="form-label"></label>
+                    <textarea asp-for="Address" class="form-control" rows="3" placeholder="Город, улица, дом, квартира"></textarea>
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="PaymentMethod" class="form-label"></label>
+                    <select asp-for="PaymentMethod" class="form-select">
+                        <option value="">-- Выберите способ оплаты --</option>
+                        <option value="CashOnDelivery">Наличными при получении</option>
+                        <option value="CardOnline">Оплата картой онлайн</option>
+                        <option value="BankTransfer">Банковский перевод</option>
+                    </select>
+                    <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-success btn-lg">✅ Подтвердить заказ</button>
+                    <a href="/Cart/Index" class="btn btn-secondary">← Вернуться в корзину</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

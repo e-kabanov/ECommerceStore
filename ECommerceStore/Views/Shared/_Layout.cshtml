@@ -26,12 +26,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Главная</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Товары</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Cart" asp-action="Index">Корзина</a>
-                        </li>
+                        
                         @if (User.IsInRole("admin"))
                         {
                             <li class="nav-item dropdown">
@@ -52,18 +47,30 @@
                         {
                             <li class="nav-item">
                                 <span class="nav-link text-dark">
-                                    <strong>@User.Identity.Name</strong>
+                                    <strong>Здравствуйте, @User.Identity.Name</strong>
                                 </span>
                             </li>
 
-                            @* <li class="nav-item">
+                            <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Cart" asp-action="Index">
-                                    🛒 Корзина
-                                    @{
-                                        int cartCount = await CartRepository.GetCartCount();
-                                    }
+                                    🛒
+                                        @{
+                                                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                                                if (!string.IsNullOrEmpty(userId) && int.TryParse(userId, out var userIdInt))
+                                                {
+                                                    int cartCount = await CartRepository.GetCartCount(userIdInt);
+
+                                                    if (cartCount > 0)
+                                                    {
+                                                        <span class="badge bg-danger ms-1" style="font-size: 0.7rem;">
+                                                                @cartCount
+                                                         </span>
+                                                    }
+                                                }
+                                          }
                                 </a>
-                            </li> *@
+                            </li>
 
 
                             <li class="nav-item">

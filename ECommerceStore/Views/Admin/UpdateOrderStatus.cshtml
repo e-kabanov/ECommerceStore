@@ -1,0 +1,30 @@
+﻿@using ECommerceStore.DTOs
+@model UpdateOrderStatusModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Изменение статуса";
+}
+
+<div class="container mt-4" style="max-width: 500px;">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4>Изменение статуса заказа №@Model.OrderId</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="UpdateOrderStatus" method="post">
+                <input type="hidden" asp-for="OrderId" />
+
+                <div class="mb-3">
+                    <label asp-for="OrderStatusId" class="form-label">Статус заказа</label>
+                    <select asp-for="OrderStatusId" class="form-select" asp-items="@Model.OrderStatusList">
+                        <option value="">-- Выберите статус --</option>
+                    </select>
+                    <span asp-validation-for="OrderStatusId" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a asp-action="AllOrders" class="btn btn-secondary">Отмена</a>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,100 @@
+﻿@model IEnumerable<ECommerceStore.Models.Order>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Управление заказами";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">📋 Управление заказами</h4>
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Дата заказа</th>
+                                <th>Имя получателя</th>
+                                <th>Email</th>
+                                <th>Телефон</th>
+                                <th>Адрес</th>
+                                <th>Способ оплаты</th>
+                                <th>Статус заказа</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td>@order.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>@order.Name</td>
+                                    <td>@order.Email</td>
+                                    <td>@order.MobileNumber</td>
+                                    <td>@order.Address</td>
+                                    <td>@order.PaymentMethod</td>
+                                    <td>
+                                        <span class="badge @(GetStatusBadgeClass(order.Status?.StatusName))">
+                                            @(order.Status?.StatusName ?? "Неизвестно")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column gap-2">
+                                            <button type="button" data-bs-toggle="modal" data-bs-target="#modal-@order.OrderId" class="btn btn-primary btn-sm">
+                                                📋 Детали
+                                            </button>
+                                            <a asp-action="UpdateOrderStatus" asp-route-orderId="@order.OrderId" class="btn btn-primary btn-sm">
+                                                ✏️ Статус
+                                            </a>
+                                            <a asp-action="TogglePaymentStatus" asp-route-orderId="@order.OrderId" class="btn btn-primary btn-sm">
+                                                💳 Оплата
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Модальные окна вне таблицы -->
+                @foreach (var order in Model)
+                {
+                    @await Html.PartialAsync("OrderDetailModal", new ECommerceStore.DTOs.OrderDetailModal
+                    {
+                        DivId = order.OrderId.ToString(),
+                        OrderDetails = order.OrderItems?.ToList() ?? new List<OrderItem>()
+                    })
+                }
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    <h5>Нет заказов</h5>
+                    <p>Пока нет ни одного заказа.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(string statusName)
+    {
+        return statusName?.ToLower() switch
+        {
+            "pending" => "bg-warning",
+            "confirmed" => "bg-info",
+            "processing" => "bg-primary",
+            "shipped" => "bg-info",
+            "delivered" => "bg-success",
+            "completed" => "bg-secondary",
+            "canceled" => "bg-danger",
+            "refunded" => "bg-dark",
+            _ => "bg-secondary"
+        };
+    }
+}

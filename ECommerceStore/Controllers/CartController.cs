@@ -1,4 +1,5 @@
-﻿using ECommerceStore.Models;
+﻿using ECommerceStore.DTOs;
+using ECommerceStore.Models;
 using ECommerceStore.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,7 @@ namespace ECommerceStore.Controllers
                 int cartCount = await _cartRepository.AddItem(productId, quantity);
                 TempData["Success"] = "Товар добавлен в корзину!";
 
-                return RedirectToAction("Index");
+                return Redirect(Request.Headers["Referer"].ToString() ?? "/Home/Index");
             }
 
             catch (UnauthorizedAccessException)
@@ -68,6 +69,43 @@ namespace ECommerceStore.Controllers
                 TempData["Error"] = $"Ошибка: {ex.Message}";
                 return RedirectToAction("Index");
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Checkout(CheckoutModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            bool result = await _cartRepository.DoCheckout(model);
+
+            if (result)
+            {
+                TempData["Success"] = "Заказ успешно оформлен! Спасибо за покупку!";
+                return RedirectToAction("OrderConfirmation");
+            }
+
+            else
+            {
+                TempData["Error"] = "Ошибка при оформлении заказа. Попробуйте позже.";
+                return View(model);
+            }
+
+
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Checkout()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult OrderConfirmation()
+        {
+            return View();
         }
 
         [HttpGet]

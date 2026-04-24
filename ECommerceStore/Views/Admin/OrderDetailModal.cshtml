@@ -1,0 +1,46 @@
+﻿@model ECommerceStore.DTOs.OrderDetailModal
+
+<div class="modal fade" id="modal-@Model.DivId" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">📦 Детали заказа №@Model.DivId</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Товар</th>
+                            <th>Цена</th>
+                            <th>Кол-во</th>
+                            <th>Сумма</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderDetails)
+                        {
+                            <tr>
+                                <td>@item.Product?.Name</td>
+                                <td>@item.PriceAtTime.ToString("C")</td>
+                                <td>@item.Quantity</td>
+                                <td>@((item.PriceAtTime * item.Quantity).ToString("C"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold">Итого:</td>
+                            <td class="fw-bold text-primary">
+                                @Model.OrderDetails.Sum(item => item.PriceAtTime * item.Quantity).ToString("C")
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>

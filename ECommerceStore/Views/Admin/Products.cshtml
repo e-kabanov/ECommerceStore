@@ -1,0 +1,84 @@
+﻿@model List<ECommerceStore.Models.Product>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Управление товарами";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">📦 Управление товарами</h4>
+            <a asp-action="CreateProduct" class="btn btn-light btn-sm">➕ Добавить товар</a>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+            }
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 50px">ID</th>
+                                <th style="width: 80px">Фото</th>
+                                <th>Название</th>
+                                <th style="width: 120px">Цена</th>
+                                <th style="width: 80px">Склад</th>
+                                <th style="width: 100px">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var product in Model)
+                            {
+                                <tr>
+                                    <td>@product.ProductId</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(product.Photo))
+                                        {
+                                            <img src="@product.Photo" style="width: 50px; height: 50px; object-fit: cover;" />
+                                        }
+                                        else
+                                        {
+                                            <img src="/images/NoImage.png" style="width: 50px; height: 50px; object-fit: cover;" />
+                                        }
+                                    </td>
+                                    <td>@product.Name</td>
+                                    <td>@product.Price.ToString("C")</td>
+                                    <td>@product.Stock</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-action="EditProduct" asp-route-id="@product.ProductId" class="btn btn-primary">✏️</a>
+                                            <button type="button" onclick="deleteProduct(@product.ProductId)" class="btn btn-danger">🗑️</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">Нет товаров. Добавьте первый товар!</div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteProduct(id) {
+            if (confirm('Вы уверены, что хотите удалить этот товар?')) {
+                fetch(`/admin/products/delete/${id}`, { method: 'POST' })
+                    .then(() => location.reload());
+            }
+        }
+    </script>
+}

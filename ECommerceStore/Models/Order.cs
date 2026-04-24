@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerceStore.Models;
 
+
+
 public partial class Order
 {
     [Key]
@@ -20,6 +22,21 @@ public partial class Order
 
     [Column(TypeName = "datetime")]
     public DateTime CreatedAt { get; set; }
+
+    [StringLength(100)]
+    public string? Name { get; set; }
+
+    [StringLength(100)]
+    public string? Email { get; set; }
+
+    [StringLength(20)]
+    public string? MobileNumber { get; set; }
+
+    [StringLength(500)]
+    public string? Address { get; set; }
+
+    [StringLength(50)]
+    public string? PaymentMethod { get; set; }
 
     [InverseProperty("Order")]
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

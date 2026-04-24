@@ -1,11 +1,13 @@
 ﻿using ECommerceStore.Data;
 using ECommerceStore.DTOs;
 using ECommerceStore.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 using System.Net.NetworkInformation;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
@@ -21,6 +23,7 @@ namespace ECommerceStore.Repositories
         Task<List<CartItemViewModel>> GetUserCart();
         Task<int> GetCartCount(int userId);
         Task<int> RemoveItemCompletely(int itemId);
+        Task<bool> DoCheckout(CheckoutModel model);
 
     }
 
@@ -193,6 +196,81 @@ namespace ECommerceStore.Repositories
                
         }
 
-        
+        public async Task<bool> DoCheckout(CheckoutModel model)
+        {
+
+            try
+            {
+                string userId = GetUserId();
+                if (!int.TryParse(userId, out var userIdInt))
+                {
+                    throw new UnauthorizedAccessException("Неверный формат ID пользователя");
+                }
+
+                var cart = await _context.Carts
+                    .Include(c => c.CartItems)
+                    .ThenInclude(c => c.Product)
+                    .FirstOrDefaultAsync(c => c.UserId == userIdInt);
+
+                if (cart == null || !cart.CartItems.Any())
+                {
+                    throw new InvalidOperationException("Корзина пуста");
+                }
+
+                var pendingStatus = await _context.OrderStatuses.FirstOrDefaultAsync(s => s.StatusName == "pending");
+
+                decimal totalAmount = cart.CartItems.Sum(ci => ci.Product.Price * ci.Quantity);
+
+
+                var order = new Order
+                {
+                    UserId = userIdInt,
+                    TotalAmount = totalAmount,
+                    StatusId = pendingStatus.StatusId,
+                    CreatedAt = DateTime.Now,
+
+                    Name = model.Name,
+                    Email = model.Email,
+                    MobileNumber = model.MobileNumber,
+                    Address = model.Address,
+                    PaymentMethod = model.PaymentMethod,
+                };
+
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+
+                foreach (var item in cart.CartItems)
+                {
+
+                    var product = await _context.Products.FindAsync(item.ProductId);
+
+                    var orderItem = new OrderItem
+                    {
+                        OrderId = order.OrderId,
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity,
+                        PriceAtTime = product.Price
+                    };
+
+                    _context.OrderItems.Add(orderItem);
+
+                    product.Stock -= item.Quantity;
+
+                }
+
+                _context.CartItems.RemoveRange(cart.CartItems);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+                
+
+             catch(Exception ex) 
+            {
+                Console.WriteLine($" Ошибка {ex.Message}");
+                return false;
+            }
+
+        }
     }
 }

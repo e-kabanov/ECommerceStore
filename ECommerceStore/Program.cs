@@ -12,6 +12,9 @@ builder.Services.AddDbContext<EcommerceDatabaseContext>(options =>
 
 builder.Services.AddTransient<IHomeRepository, HomeRepository>();
 builder.Services.AddTransient<ICartRepository, CartRepository>();
+builder.Services.AddTransient<IUserOrderRepository, UserOrderRepository>();
+builder.Services.AddTransient<IProductRepository, ProductRepository>();
+builder.Services.AddTransient<IFileService, FileService>();
 
 builder.Services.AddHttpContextAccessor();
 
